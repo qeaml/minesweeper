@@ -28,3 +28,38 @@ CompileFlags:
     -xc++,
     -std=c++23,
   ]
+---
+If:
+  PathMatch: (source|include)/.*.[ch](pp)?
+CompileFlags:
+  Add: [
+    -I../include,
+  ]
+---
+If:
+  PathMatch: (source|include)/.*/.*\.[ch](pp)?
+CompileFlags:
+  Add: [
+    -I../../include,
+  ]
+---
+If:
+  PathMatch: (source|include)/.*/.*/.*\.[ch](pp)?
+CompileFlags:
+  Add: [
+    -I../../../include,
+  ]
+---
+If:
+  PathMatch: (source|include)/.*/.*/.*/.*\.[ch](pp)?
+CompileFlags:
+  Add: [
+    -I../../../../include,
+  ]
+---
+If:
+  PathMatch: (source|include)/.*/.*/.*/.*/.*\.[ch](pp)?
+CompileFlags:
+  Add: [
+    -I../../../../../include,
+  ]

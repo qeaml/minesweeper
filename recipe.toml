@@ -6,12 +6,14 @@ out = "target"
 [build.c]
 cstd = "c11"
 cppstd = "c++23"
+incl = ["include"]
 
 [build.cpp]
 cstd = "c11"
 cppstd = "c++23"
+incl = ["include"]
 
 [game]
-exe = "game"
+exe = "mine"
 lang = "cpp"
 libs = [ "nwge", "SDL2" ]
