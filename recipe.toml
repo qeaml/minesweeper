@@ -1,0 +1,17 @@
+[build]
+src = "source"
+obj = "target/build"
+out = "target"
+
+[build.c]
+cstd = "c11"
+cppstd = "c++23"
+
+[build.cpp]
+cstd = "c11"
+cppstd = "c++23"
+
+[game]
+exe = "game"
+lang = "cpp"
+libs = [ "nwge", "SDL2" ]
