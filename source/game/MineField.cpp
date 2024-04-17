@@ -16,6 +16,7 @@ void MineField::prepare(u8 width, u8 height, u8 bombCount) {
   mMineCount = bombCount;
   mGenerated = false;
   mLost = false;
+  mWon = false;
   mFields = {usize(mWidth) * mHeight};
 
   if(mWidth > mHeight) {
@@ -56,9 +57,17 @@ bool MineField::reveal(u8 x, u8 y) {
     return false;
   }
   if(field.isMine) {
+    mLost = true;
     return true;
   }
   propagate(x, y);
+  usize unrevealedNonMines = 0;
+  for(const auto &field: mFields) {
+    if(!field.isRevealed && !field.isMine) {
+      ++unrevealedNonMines;
+    }
+  }
+  mWon = unrevealedNonMines == 0;
   return false;
 }
 
@@ -79,7 +88,7 @@ void MineField::generate(u8 entryX, u8 entryY) {
     xDis{0, mWidth - 1},
     yDis{0, mHeight - 1};
 
-  for(int i = 0; i < mMineCount; ++i) {
+  for(int i = 1; i < mMineCount; ++i) {
     while(true) {
       u8 x = xDis(gen), y = yDis(gen);
       if(x == entryX && y == entryY) {
@@ -157,6 +166,14 @@ glm::ivec2 MineField::atMousePos(glm::vec2 mousePos) {
   };
 }
 
+bool MineField::won() const {
+  return mWon;
+}
+
+bool MineField::lost() const {
+  return mLost;
+}
+
 static constexpr inline
 render::gl::TexCoord textureIndex2TexCoord(s32 textureIndex) {
   f32 x = f32(textureIndex & 7) / 8.0f;
@@ -164,7 +181,7 @@ render::gl::TexCoord textureIndex2TexCoord(s32 textureIndex) {
   return {{x, y}, {1.0f/8.0f, 1.0f/2.0f}};
 }
 
-void MineField::render(bool loss) const {
+void MineField::render() const {
   for(s32 x = 0; x < mWidth; ++x) {
   for(s32 y = 0; y < mHeight; ++y) {
     const auto &field = getField(x, y);
@@ -173,7 +190,7 @@ void MineField::render(bool loss) const {
       mBasePos.y + mPosOff.y + mFieldSize.y * y,
       mBasePos.z
     };
-    render::gl::TexCoord texCoord = textureIndex2TexCoord(field.textureIndex(loss));
+    render::gl::TexCoord texCoord = textureIndex2TexCoord(field.textureIndex(mLost));
     render::rect(fieldPos, mFieldSize, mTexture, texCoord);
   }
   }

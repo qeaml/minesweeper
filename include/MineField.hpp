@@ -8,7 +8,6 @@ The mine field, the most important part of Minesweeper.
 
 #include <nwge/common/array.hpp>
 #include <nwge/common/def.h>
-#include <nwge/render/aspectRatio.hpp>
 #include <nwge/render/draw.hpp>
 
 namespace mine {
@@ -60,9 +59,9 @@ private:
   u8 mMineCount = cDefaultMineCount;
   bool mGenerated = false;
   bool mLost = false;
+  bool mWon = false;
   nwge::Array<Field> mFields{usize(mWidth) * mHeight};
 
-  nwge::render::AspectRatio mAR{1, 1};
   glm::vec3 mBasePos;
   glm::vec2 mMaxSize;
   glm::vec2 mPosOff;
@@ -161,14 +160,14 @@ public:
    * @return true All mines found
    * @return false Not all mines found
    */
-  bool checkWin() const;
+  bool won() const;
+
+  bool lost() const;
 
   /**
    * @brief Render the minefield.
-   *
-   * @param loss Whether the player has clicked on a mine
    */
-  void render(bool loss) const;
+  void render() const;
 };
 
 } // namespace mine

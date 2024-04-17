@@ -1,7 +1,6 @@
 #include "states.hpp"
 #include "MineField.hpp"
 #include <nwge/data/bundle.hpp>
-#include <nwge/render/aspectRatio.hpp>
 #include <nwge/render/draw.hpp>
 #include <nwge/render/window.hpp>
 #include <nwge/bind.hpp>
@@ -11,8 +10,12 @@ using namespace nwge;
 namespace mine {
 
 static constexpr f32
-  cMineFieldBaseZ = 0.5f,
-  cConfigBaseZ = cMineFieldBaseZ + 0.1f;
+  cConfigBaseZ = 0.5f,
+  cMineFieldBaseZ = cConfigBaseZ + 0.1f;
+
+static KeyBind
+  gAccept{"mine.accept", Key::Return},
+  gQuit{"mine.quit", Key::Escape};
 
 class ConfigSubState: public nwge::SubState {
 private:
@@ -27,9 +30,7 @@ private:
     mUp{"mine.up", Key::Up},
     mDown{"mine.down", Key::Down},
     mLess{"mine.less", Key::Left},
-    mMore{"mine.more", Key::Right},
-    mAccept{"mine.accept", Key::Return},
-    mQuit{"mine.quit", Key::Escape};
+    mMore{"mine.more", Key::Right};
 
   static constexpr u8
     cMaxSelection = 3;
@@ -41,12 +42,11 @@ private:
     cTextZ = cConfigBaseZ + 0.01f,
     cBgZ = cTextZ + 0.01f;
 
-  static constexpr glm::vec3 cTextAnchor{0.15f, 0.15f, cTextZ};
+  static constexpr glm::vec3 cTextAnchor{0.14f, 0.14f, cTextZ};
   static constexpr f32
-    cTextH = 0.05f,
+    cTextH = 0.04f,
     cArrowX = 0.1f,
     cArrowY = cTextAnchor.y + 2*cTextH;
-
 
 public:
   ConfigSubState(render::Font &font, MineField &mineField)
@@ -104,12 +104,12 @@ public:
         break;
       }
     }
-    if(mAccept.wasPressed()) {
+    if(gAccept.wasPressed()) {
       mMineField.prepare(mWidth, mHeight, mMineCount);
       popSubState();
       return true;
     }
-    if(mQuit.wasPressed()) {
+    if(gQuit.wasPressed()) {
       return false;
     }
 
@@ -138,6 +138,124 @@ public:
   }
 };
 
+class LossSubState: public nwge::SubState {
+private:
+  MineField &mMineField;
+  render::Font &mFont;
+
+  static constexpr glm::vec4
+    cBgColor{.0f, .0f, .0f, .5f};
+
+  static constexpr f32
+    cTextZ = cConfigBaseZ + 0.01f,
+    cBgZ = cTextZ + 0.01f;
+
+  static constexpr glm::vec3 cTextAnchor{0.5f, 0.2f, cTextZ};
+  static constexpr f32
+    cTextH = 0.06f;
+
+public:
+  LossSubState(render::Font &font, MineField &mineField)
+    : mMineField(mineField), mFont(font)
+  {}
+
+  bool tick([[maybe_unused]] f32 delta) override {
+    if(gAccept.wasPressed()) {
+      swapSubStatePtr(
+        new ConfigSubState(mFont, mMineField),
+        {
+          .renderParent = true,
+        });
+      return true;
+    }
+    if(gQuit.wasPressed()) {
+      return false;
+    }
+    return true;
+  }
+
+  void render() const override {
+    render::color(cBgColor);
+    render::rect({0, 0, cBgZ}, {1, 1});
+
+    render::color();
+
+    auto textSz = mFont.measure("You lost!", cTextH);
+    mFont.draw("You lost!",
+      {0.5f - 0.5f * textSz.x, cTextAnchor.y, cTextAnchor.z},
+      cTextH);
+
+    textSz = mFont.measure("Press Enter to retry.", cTextH);
+    mFont.draw("Press Enter to retry.",
+      {0.5f - 0.5f * textSz.x, cTextAnchor.y + 2*cTextH, cTextAnchor.z},
+      cTextH);
+
+    textSz = mFont.measure("Press Escape to quit.", cTextH);
+    mFont.draw("Press Escape to quit.",
+      {0.5f - 0.5f * textSz.x, cTextAnchor.y + 3*cTextH, cTextAnchor.z},
+      cTextH);
+  }
+};
+
+class VictorySubState: public nwge::SubState {
+private:
+  MineField &mMineField;
+  render::Font &mFont;
+
+  static constexpr glm::vec4
+    cBgColor{.0f, .0f, .0f, .5f};
+
+  static constexpr f32
+    cTextZ = cConfigBaseZ + 0.01f,
+    cBgZ = cTextZ + 0.01f;
+
+  static constexpr glm::vec3 cTextAnchor{0.5f, 0.2f, cTextZ};
+  static constexpr f32
+    cTextH = 0.06f;
+
+public:
+  VictorySubState(render::Font &font, MineField &mineField)
+    : mMineField(mineField), mFont(font)
+  {}
+
+  bool tick([[maybe_unused]] f32 delta) override {
+    if(gAccept.wasPressed()) {
+      swapSubStatePtr(
+        new ConfigSubState(mFont, mMineField),
+        {
+          .renderParent = true,
+        });
+      return true;
+    }
+    if(gQuit.wasPressed()) {
+      return false;
+    }
+    return true;
+  }
+
+  void render() const override {
+    render::color(cBgColor);
+    render::rect({0, 0, cBgZ}, {1, 1});
+
+    render::color();
+
+    auto textSz = mFont.measure("You win!", cTextH);
+    mFont.draw("You win!",
+      {0.5f - 0.5f * textSz.x, cTextAnchor.y, cTextAnchor.z},
+      cTextH);
+
+    textSz = mFont.measure("Press Enter to retry.", cTextH);
+    mFont.draw("Press Enter to retry.",
+      {0.5f - 0.5f * textSz.x, cTextAnchor.y + 2*cTextH, cTextAnchor.z},
+      cTextH);
+
+    textSz = mFont.measure("Press Escape to quit.", cTextH);
+    mFont.draw("Press Escape to quit.",
+      {0.5f - 0.5f * textSz.x, cTextAnchor.y + 3*cTextH, cTextAnchor.z},
+      cTextH);
+  }
+};
+
 /*
 TODOs:
   * Fail SubState
@@ -151,15 +269,13 @@ private:
   data::Bundle mBundle;
   render::Font mFont;
   render::gl::Texture mIcons;
-  render::AspectRatio mAR{1, 1};
   MineField mMineField;
-  bool mLost = false;
 
 public:
   MineFieldState()
     : mMineField({
-        {mAR.pos({0, 0}), cMineFieldBaseZ},
-        {mAR.size({1, 1})},
+        {0, 0, cMineFieldBaseZ},
+        {1, 1},
         &mIcons
       })
   {}
@@ -182,7 +298,7 @@ public:
   }
 
   bool on(Event &evt) override {
-    if(mLost) {
+    if(mMineField.lost() || mMineField.won()) {
       return true;
     }
 
@@ -195,7 +311,17 @@ public:
       switch(evt.click.button) {
       case MouseButton::Left:
         if(mMineField.reveal(fieldPos.x, fieldPos.y)) {
-          mLost = true;
+          pushSubStatePtr(
+            new LossSubState(mFont, mMineField),
+            {
+              .renderParent = true,
+            });
+        } else if(mMineField.won()) {
+          pushSubStatePtr(
+            new VictorySubState(mFont, mMineField),
+            {
+              .renderParent = true,
+            });
         }
         break;
       case MouseButton::Middle:
@@ -214,7 +340,7 @@ public:
 
   void render() const override {
     render::clear();
-    mMineField.render(mLost);
+    mMineField.render();
   }
 };
 
