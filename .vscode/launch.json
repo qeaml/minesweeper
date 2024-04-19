@@ -8,9 +8,9 @@
       "type": "lldb",
       "request": "launch",
       "name": "Debug",
-      "program": "${workspaceFolder}/target/mine",
+      "program": "${workspaceFolder}/target/debug/mine",
       "args": [],
-      "cwd": "${workspaceFolder}/target"
+      "cwd": "${workspaceFolder}/target/debug"
     }
   ]
 }

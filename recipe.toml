@@ -2,16 +2,15 @@
 src = "source"
 obj = "target/build"
 out = "target"
+bip = "3.0+"
 
 [build.c]
-cstd = "c11"
-cppstd = "c++23"
-incl = ["include"]
+include = [ "include" ]
+std = "c11"
 
 [build.cpp]
-cstd = "c11"
-cppstd = "c++23"
-incl = ["include"]
+include = [ "include" ]
+std = "c++23"
 
 [game]
 exe = "mine"
