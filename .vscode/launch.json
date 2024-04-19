@@ -10,7 +10,7 @@
       "name": "Debug",
       "program": "${workspaceFolder}/target/debug/mine",
       "args": [],
-      "cwd": "${workspaceFolder}/target/debug"
+      "cwd": "${workspaceFolder}/target"
     }
   ]
 }
